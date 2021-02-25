@@ -1,4 +1,4 @@
-package com.insurance.project;
+package com.vacation.project;
 
 import java.util.logging.Logger;
 

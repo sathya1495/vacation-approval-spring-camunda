@@ -1,4 +1,4 @@
-package com.insurance.project.controller;
+package com.vacation.project.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
