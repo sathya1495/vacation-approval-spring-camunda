@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="insurancePlan" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="4.6.0">
+  <decision id="getInsurancePlans" name="get Insurance Plans">
+    <decisionTable id="DecisionTable_0xgqq0d" hitPolicy="FIRST">
+      <input id="Input_1" label="insurancePlan" biodi:width="192" camunda:inputVariable="insurancePlan">
+        <inputExpression id="InputExpression_1" typeRef="string" expressionLanguage="feel">
+          <text>insurancePlan</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" name="description" typeRef="string" />
+      <rule id="DecisionRule_0zhc5wo">
+        <inputEntry id="UnaryTests_0frc3e8">
+          <text>"Gold"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ake03z">
+          <text>"Its a gold Plan"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_09e69ya">
+        <inputEntry id="UnaryTests_0lnvyr5">
+          <text>"Platinum"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0d9apno">
+          <text>"Its a Platinum Plan"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="getInsurancePlans">
+        <dc:Bounds height="80" width="180" x="160" y="80" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
