@@ -4,9 +4,6 @@
     <bpmn:startEvent id="TweetSubmittedStartEvent" name="Vacation Form submission">
       <bpmn:outgoing>Flow_19mwrrf</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:endEvent id="TweetApprovedEndEvent" name="Vacation Approved">
-      <bpmn:incoming>Flow_1olsb40</bpmn:incoming>
-    </bpmn:endEvent>
     <bpmn:endEvent id="TweetRejectedEndEvent" name="Vacation Rejected">
       <bpmn:incoming>Flow_0t6h7o9</bpmn:incoming>
     </bpmn:endEvent>
@@ -18,97 +15,200 @@
     <bpmn:sequenceFlow id="YesSequenceFlow" name="Yes" sourceRef="ApprovedGateway" targetRef="PublishTweetTask">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{approved}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1olsb40" sourceRef="PublishTweetTask" targetRef="TweetApprovedEndEvent" />
     <bpmn:sequenceFlow id="Flow_19mwrrf" sourceRef="TweetSubmittedStartEvent" targetRef="ReviewTheTweetTask" />
     <bpmn:sequenceFlow id="NoSequenceFlow" name="No" sourceRef="ApprovedGateway" targetRef="RejectTweetTask">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not approved}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0t6h7o9" sourceRef="RejectTweetTask" targetRef="TweetRejectedEndEvent" />
-    <bpmn:scriptTask id="PublishTweetTask" name="Approve">
-      <bpmn:incoming>YesSequenceFlow</bpmn:incoming>
-      <bpmn:outgoing>Flow_1olsb40</bpmn:outgoing>
-      <bpmn:script>print('Tweet published');</bpmn:script>
-    </bpmn:scriptTask>
-    <bpmn:scriptTask id="RejectTweetTask" name="Reject">
+    <bpmn:scriptTask id="RejectTweetTask" name="Reject" scriptFormat="javascript">
       <bpmn:incoming>NoSequenceFlow</bpmn:incoming>
       <bpmn:outgoing>Flow_0t6h7o9</bpmn:outgoing>
-      <bpmn:script>print('Tweet not published');</bpmn:script>
+      <bpmn:script>print('Vacation Rejected');</bpmn:script>
     </bpmn:scriptTask>
     <bpmn:sequenceFlow id="Flow_0r5xd5n" sourceRef="ReviewTheTweetTask" targetRef="ApprovedGateway" />
     <bpmn:userTask id="ReviewTheTweetTask" name="Vacation Approval From Employee">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="startDate">${startDate}</camunda:outputParameter>
+          <camunda:outputParameter name="endDate">${endDate}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_19mwrrf</bpmn:incoming>
       <bpmn:outgoing>Flow_0r5xd5n</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_1ee3biv" name="Approved?">
+      <bpmn:incoming>Flow_13ru4p7</bpmn:incoming>
+      <bpmn:outgoing>YesFlow</bpmn:outgoing>
+      <bpmn:outgoing>NoFlow</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="YesFlow" name="Yes" sourceRef="Gateway_1ee3biv" targetRef="vacapproved">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{approve}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="NoFlow" name="No" sourceRef="Gateway_1ee3biv" targetRef="vacreject">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{rejected}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="Event_18bjd7y" name="Vacation Rejected">
+      <bpmn:incoming>Flow_1lua6gb</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1lua6gb" sourceRef="vacreject" targetRef="Event_18bjd7y" />
+    <bpmn:userTask id="PublishTweetTask" name="1stLevelApproval">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="startDate">${startDate}</camunda:inputParameter>
+          <camunda:inputParameter name="endDate">${endDate}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>YesSequenceFlow</bpmn:incoming>
+      <bpmn:outgoing>Flow_13ru4p7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_0q1hmlv" name="Vacation Approved">
+      <bpmn:incoming>Flow_09tju4y</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_09tju4y" sourceRef="vacapproved" targetRef="Event_0q1hmlv" />
+    <bpmn:scriptTask id="vacreject" name="Vacation Rejected" scriptFormat="javascript">
+      <bpmn:incoming>NoFlow</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lua6gb</bpmn:outgoing>
+      <bpmn:script>print('Vacation Rejected');</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:scriptTask id="vacapproved" name="CompleteApproval" scriptFormat="javascript">
+      <bpmn:incoming>YesFlow</bpmn:incoming>
+      <bpmn:outgoing>Flow_09tju4y</bpmn:outgoing>
+      <bpmn:script>print('Vacation Approved');</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_13ru4p7" sourceRef="PublishTweetTask" targetRef="Gateway_1ee3biv" />
+    <bpmn:textAnnotation id="TextAnnotation_0l6aywt">
+      <bpmn:text>Vacation Rejected</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_11c8lt6" sourceRef="Event_18bjd7y" targetRef="TextAnnotation_0l6aywt" />
+    <bpmn:textAnnotation id="TextAnnotation_1drd43k">
+      <bpmn:text>Vacation Approved</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0in94cz" sourceRef="Event_0q1hmlv" targetRef="TextAnnotation_1drd43k" />
   </bpmn:process>
   <bpmn:message id="Message_19067wm" name="Message_SUTweet" />
   <bpmn:message id="Message_1fbjg0o" name="Message_Withdrawn" />
   <bpmn:error id="Error_0pbu4jz" name="Error_Duplicate" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="VacationApprovalProcess">
+      <bpmndi:BPMNShape id="TextAnnotation_0l6aywt_di" bpmnElement="TextAnnotation_0l6aywt">
+        <dc:Bounds x="1110" y="211" width="100.00000277937869" height="38.25136612021857" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1drd43k_di" bpmnElement="TextAnnotation_1drd43k">
+        <dc:Bounds x="1100" y="110" width="100.00000277937869" height="39" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0r5xd5n_di" bpmnElement="Flow_0r5xd5n">
+        <di:waypoint x="420" y="370" />
+        <di:waypoint x="475" y="370" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0t6h7o9_di" bpmnElement="Flow_0t6h7o9">
-        <di:waypoint x="710" y="240" />
-        <di:waypoint x="772" y="240" />
+        <di:waypoint x="710" y="480" />
+        <di:waypoint x="772" y="480" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0hw623c_di" bpmnElement="NoSequenceFlow" bioc:stroke="#000" bioc:fill="#fff">
-        <di:waypoint x="500" y="155" />
-        <di:waypoint x="500" y="240" />
-        <di:waypoint x="610" y="240" />
+        <di:waypoint x="500" y="395" />
+        <di:waypoint x="500" y="480" />
+        <di:waypoint x="610" y="480" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="508" y="195" width="15" height="14" />
+          <dc:Bounds x="508" y="435" width="15" height="14" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0r5xd5n_di" bpmnElement="Flow_0r5xd5n">
-        <di:waypoint x="420" y="130" />
-        <di:waypoint x="475" y="130" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_19mwrrf_di" bpmnElement="Flow_19mwrrf">
-        <di:waypoint x="218" y="130" />
-        <di:waypoint x="320" y="130" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1olsb40_di" bpmnElement="Flow_1olsb40">
-        <di:waypoint x="710" y="130" />
-        <di:waypoint x="772" y="130" />
+        <di:waypoint x="218" y="370" />
+        <di:waypoint x="320" y="370" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0chw1qb_di" bpmnElement="YesSequenceFlow" bioc:stroke="#000" bioc:fill="#fff">
-        <di:waypoint x="525" y="130" />
-        <di:waypoint x="610" y="130" />
+        <di:waypoint x="525" y="370" />
+        <di:waypoint x="610" y="370" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="553" y="112" width="18" height="14" />
+          <dc:Bounds x="553" y="352" width="18" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Event_1mzyiq7_di" bpmnElement="TweetSubmittedStartEvent" bioc:stroke="#000" bioc:fill="#fff">
-        <dc:Bounds x="182" y="112" width="36" height="36" />
+      <bpmndi:BPMNEdge id="Flow_1m8l6od_di" bpmnElement="YesFlow">
+        <di:waypoint x="660" y="205" />
+        <di:waypoint x="660" y="90" />
+        <di:waypoint x="840" y="90" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="167" y="155" width="71" height="27" />
+          <dc:Bounds x="651" y="145" width="18" height="14" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_14z9j0v_di" bpmnElement="TweetApprovedEndEvent" bioc:stroke="#000" bioc:fill="#fff">
-        <dc:Bounds x="772" y="112" width="36" height="36" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_00kfjqz_di" bpmnElement="NoFlow">
+        <di:waypoint x="685" y="230" />
+        <di:waypoint x="840" y="230" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="768" y="155" width="47" height="27" />
+          <dc:Bounds x="756" y="212" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lua6gb_di" bpmnElement="Flow_1lua6gb">
+        <di:waypoint x="940" y="230" />
+        <di:waypoint x="1032" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09tju4y_di" bpmnElement="Flow_09tju4y">
+        <di:waypoint x="940" y="120" />
+        <di:waypoint x="1022" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13ru4p7_di" bpmnElement="Flow_13ru4p7">
+        <di:waypoint x="660" y="330" />
+        <di:waypoint x="660" y="255" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1mzyiq7_di" bpmnElement="TweetSubmittedStartEvent" bioc:stroke="#000" bioc:fill="#fff">
+        <dc:Bounds x="182" y="352" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="167" y="395" width="71" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0cbwrj8_di" bpmnElement="TweetRejectedEndEvent" bioc:stroke="#000" bioc:fill="#fff">
-        <dc:Bounds x="772" y="222" width="36" height="36" />
+        <dc:Bounds x="772" y="462" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="748" y="265" width="88" height="14" />
+          <dc:Bounds x="748" y="505" width="88" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0m81jqp_di" bpmnElement="ApprovedGateway" isMarkerVisible="true" bioc:stroke="#000" bioc:fill="#fff">
-        <dc:Bounds x="475" y="105" width="50" height="50" />
+        <dc:Bounds x="475" y="345" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="473" y="81" width="53" height="14" />
+          <dc:Bounds x="473" y="321" width="53" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ogy921_di" bpmnElement="PublishTweetTask">
-        <dc:Bounds x="610" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1rzplg9_di" bpmnElement="RejectTweetTask">
-        <dc:Bounds x="610" y="200" width="100" height="80" />
+        <dc:Bounds x="610" y="440" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_08uca3h_di" bpmnElement="ReviewTheTweetTask">
-        <dc:Bounds x="320" y="90" width="100" height="80" />
+        <dc:Bounds x="320" y="330" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02auv11_di" bpmnElement="PublishTweetTask">
+        <dc:Bounds x="610" y="330" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1ee3biv_di" bpmnElement="Gateway_1ee3biv" isMarkerVisible="true">
+        <dc:Bounds x="635" y="205" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="554" y="220" width="53" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0q1hmlv_di" bpmnElement="Event_0q1hmlv">
+        <dc:Bounds x="1022" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1017" y="145" width="47" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_18bjd7y_di" bpmnElement="Event_18bjd7y">
+        <dc:Bounds x="1032" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1006" y="255" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1w4mfd1_di" bpmnElement="vacreject">
+        <dc:Bounds x="840" y="190" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1urs04i_di" bpmnElement="vacapproved">
+        <dc:Bounds x="840" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_11c8lt6_di" bpmnElement="Association_11c8lt6">
+        <di:waypoint x="1068" y="229" />
+        <di:waypoint x="1110" y="228" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0in94cz_di" bpmnElement="Association_0in94cz">
+        <di:waypoint x="1058" y="121" />
+        <di:waypoint x="1100" y="123" />
+      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>
