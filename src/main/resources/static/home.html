@@ -12,6 +12,10 @@
         	 var request;
         	 var startDate = document.getElementById('sdate').value;
         	 var endDate = document.getElementById('edate').value;
+        	 var employeeId = document.getElementById('employeeId').value;
+        	 var firstName = document.getElementById('firstName').value;
+        	 var lastName = document.getElementById('lastName').value;
+
         	    // Abort any pending request
         	    if (request) {
         	        request.abort();
@@ -32,7 +36,7 @@
         
         $(function (){
      	   var $orders = $('#orders');
-     	   var insurance = '{"variables":{"startDate":{"value":'+'"'+ startDate+'"'  +',"type":"string"},"endDate":{"value":'+'"'+ endDate+'"'  +',"type":"string"}}}';
+     	   var insurance = '{"variables":{"startDate":{"value":'+'"'+ startDate+'"'  +',"type":"string"},"endDate":{"value":'+'"'+ endDate+'"'  +',"type":"string"},"employeeId":{"value":'+'"'+ employeeId+'"'  +',"type":"string"},"firstName":{"value":'+'"'+ firstName+'"'  +',"type":"string"},"lastName":{"value":'+'"'+ lastName+'"'  +',"type":"string"}}}';
      	  request =   $.ajax({
      		   type:'POST',
      		    contentType: "application/json",
@@ -78,7 +82,27 @@
         <h3 >Vacation Approval</h3><br>
          <form class="form-1">
                      <div class="login">    
-         
+         <p class="field">
+		  <label><b>Enter the Employee Id    
+        </b>    
+        </label>
+  		<input type="text" name="employeeId" id="employeeId" placeholder="Enter the Employee Id">
+  		<i class="icon-lock icon-large"></i>
+	</p> 
+	<p class="field">
+		  <label><b>Enter the First Name    
+        </b>    
+        </label>
+  		<input type="text" name="firstName" id="firstName" placeholder="Enter the First Name">
+  		<i class="icon-lock icon-large"></i>
+	</p> 
+	<p class="field">
+		  <label><b>Enter the Last Name    
+        </b>    
+        </label>
+  		<input type="text" name="lastName" id="lastName" placeholder="Enter The Last Name">
+  		<i class="icon-lock icon-large"></i>
+	</p> 
 	<p class="field">
 	  <label><b>Enter the Start Date    
         </b>    
